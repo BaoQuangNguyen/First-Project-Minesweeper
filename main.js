@@ -2,21 +2,64 @@
 
 
 /*----- app's state (variables) -----*/
+// 1. Stated the state variables that I wanted to visualize in the browser //
 
+let board = [];
+
+let winner;
+
+let loser;
 
 /*----- cached element references -----*/
+// 2. Cached the elements from HTML that I wanted to make interactive //
 
+const boardEl = document.querySelectorAll("tile");
+
+const buttonEl = document.querySelector("button");
 
 /*----- event listeners -----*/
 
 
 /*----- functions -----*/
+// 3. Stubbing up the init function, along with all the callback functions connected to it //
 
+init();
 
+function init() {
+    board = [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+    ];
+    winner = !board.some(tile => tile.includes(null));
+    loser = board.some(tile => tile.includes(-1));
+    render();
+}
 
+function render() {
+    renderBoard();
+    renderMessage();
+    renderControls();
+}
 
+function renderBoard() {
+    board.forEach()
+}
 
+function renderMessage() {
 
+}
+
+function renderControls() {
+
+}
 
 // MINESWEEPER
 
@@ -42,7 +85,7 @@
 // UPON LOADING THE APP //
 1. Initialize the state variables.
 2. Initialize the tile array to 10x10 nulls to represent the 100 clickable squares
-3. Initialize winner to null
+3. Initialize winner to no nulls left included
 4. Initialize Render(); to render the state variables
 5. Render the Tiles
 6. Loop over all the tiles, when clicked, 8 tiles surrounding the included center, will change the object value from null to empty(1), (2) if it contains a number, or -1 if it contains a bomb
@@ -65,4 +108,16 @@
 
 So I made this pseudocode with the help of the guide from the 'TIC TAC TOE" homework, and it somewhat helps me get an idea of what to look for. I am still not very confident with functions, callback functions and DOM manipulation, so I didn't have a surefire way yet to connect all the different functions, variables and DOM elements yet.
 
-** while loops / boolean */
+
+
+
+// Things to do or look up //
+1. Have to learn how the flood feature works
+2. Should look into while loops and boolean and see how I can apply it
+3. Have to figure out how to to make sure all adjacent tiles that aren't numbers or bombs become 'un-nulled' after being uncovered
+4. Have to figure out how to uncover all bomb tiles, once player clicks on bomb. Also changing the background color of the bomb that was clicked to red
+5.
+
+
+*/
+
