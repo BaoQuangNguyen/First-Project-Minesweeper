@@ -3,6 +3,7 @@ header {
     margin-bottom: 5vmin;
     font-family: 'Merriweather', serif;
     font-weight: bold;
+    letter-spacing: 2vmin;
    
 }
 
@@ -42,11 +43,13 @@ button {
     padding: 3vmin;
     background-color: red;
     font-family: 'Merriweather', serif;
+    transform: scale(0.8);
     
 }
 
 button:hover {
     background-color: green;
     cursor: pointer;
-    
+    transform: scale(0.9);
+    transition: transform 300ms ease-in;
 }

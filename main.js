@@ -1,10 +1,15 @@
 /*----- constants -----*/
-
+const TILE_LOOKUP = {
+    'null': 'darkgray',
+    'empty': 'lightgray',
+    'numbers': [1, 2, 3, 4, 5, 6, 7, 8],
+    'bombs': -1
+};
 
 /*----- app's state (variables) -----*/
 // 1. Stated the state variables that I wanted to visualize in the browser //
 
-let board = [];
+let board;
 
 let winner;
 
@@ -13,9 +18,9 @@ let loser;
 /*----- cached element references -----*/
 // 2. Cached the elements from HTML that I wanted to make interactive //
 
-const boardEl = document.querySelectorAll("tile");
+const messageEl = document.querySelector("h1");
 
-const buttonEl = document.querySelector("button");
+const playAgainBtn = document.querySelector("button");
 
 /*----- event listeners -----*/
 
@@ -26,20 +31,10 @@ const buttonEl = document.querySelector("button");
 init();
 
 function init() {
-    board = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-    ];
-    winner = !board.some(tile => tile.includes(null));
-    loser = board.some(tile => tile.includes(-1));
+    // At first, I did a 2d Array board, where I had 10 lines of nulls. But then I found the new Array and fill method, which made it look alot cleaner //
+    board = new Array(100).fill(null);
+    winner = !boardEl.some(tile => tile.includes(null));
+    loser = boardEl.some(tile => tile.includes(-1));
     render();
 }
 
@@ -50,7 +45,10 @@ function render() {
 }
 
 function renderBoard() {
-    board.forEach()
+    board.forEach(function(tileVal, idx) {
+        const tileEl = document.getElementById(`tile${idx}`);
+        tileEl = TILE_LOOKUP[tileVal];
+    });
 }
 
 function renderMessage() {
@@ -68,7 +66,7 @@ function renderControls() {
 
 
 // DEFINE REQUIRED CONSTANTS //
-1. Define a tile object as 'null' when it is still clickable, empty as 1, numbers as 2 and bomb as -1
+1. Define a tile object as 'null' when it is still clickable, empty as 0, numbers as 1 and bomb as -1
 
 
 // DEFINE STATE VARIABLES //
@@ -116,7 +114,7 @@ So I made this pseudocode with the help of the guide from the 'TIC TAC TOE" home
 2. Should look into while loops and boolean and see how I can apply it
 3. Have to figure out how to to make sure all adjacent tiles that aren't numbers or bombs become 'un-nulled' after being uncovered
 4. Have to figure out how to uncover all bomb tiles, once player clicks on bomb. Also changing the background color of the bomb that was clicked to red
-5.
+5. Might consider having different board sizes for difficulty levels. Have to figure out how to code that through JS
 
 
 */
