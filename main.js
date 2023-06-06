@@ -1,19 +1,19 @@
 /*----- constants -----*/
-const TILE_LOOKUP = {
-    'null': 'darkgray',
-    'empty': 'lightgray',
-    'numbers': [1, 2, 3, 4, 5, 6, 7, 8],
-    'bombs': -1
+const TILE_COLOR_LOOKUP = {
+    '0': 'darkgray',
+    '1': 'lightgray',
+    '-1': 'red',
+    
 };
 
 /*----- app's state (variables) -----*/
 // 1. Stated the state variables that I wanted to visualize in the browser //
-
+// Started with board, loser and winner. Will Probably adjust later //
 let board;
 
-let winner;
-
 let loser;
+
+let winner;
 
 /*----- cached element references -----*/
 // 2. Cached the elements from HTML that I wanted to make interactive //
@@ -23,7 +23,8 @@ const messageEl = document.querySelector("h1");
 const playAgainBtn = document.querySelector("button");
 
 /*----- event listeners -----*/
-
+document.getElementById('board').addEventListener('click', handleTile);
+playAgainBtn.addEventListener('click', init);
 
 /*----- functions -----*/
 // 3. Stubbing up the init function, along with all the callback functions connected to it //
@@ -32,10 +33,14 @@ init();
 
 function init() {
     // At first, I did a 2d Array board, where I had 10 lines of nulls. But then I found the new Array and fill method, which made it look alot cleaner //
-    board = new Array(100).fill(null);
-    winner = !boardEl.some(tile => tile.includes(null));
-    loser = boardEl.some(tile => tile.includes(-1));
+    board = new Array(100).fill(0);
+    loser = -1;
+    winner = null;
     render();
+}
+
+function handleTile(evt) {
+
 }
 
 function render() {
@@ -46,17 +51,28 @@ function render() {
 
 function renderBoard() {
     board.forEach(function(tileVal, idx) {
-        const tileEl = document.getElementById(`tile${idx}`);
-        tileEl = TILE_LOOKUP[tileVal];
-    });
-}
+        const tileEl = document.getElementById(`tile-${idx}`);
+        // console.log(tileEl);
+        // Decided to do just the background color for the clickable tiles and bomb for now //
+        tileEl.style.backgroundColor = TILE_COLOR_LOOKUP[tileVal];
+        });
+    }
+
+
 
 function renderMessage() {
-
+    if (loser === '-1') {
+        messageEl.innerText = 'GAME OVER';
+    } else if (winner) {
+        messageEl.innerText = 'YOU WIN!';
+    } else {
+        return;
+    }
 }
 
 function renderControls() {
-
+    // Learned how to use the hidden button function using Ternary Expression from the Connect 4 code along video //
+    playAgainBtn.style.visibility = winner ? 'visible': 'hidden';
 }
 
 // MINESWEEPER
@@ -115,6 +131,14 @@ So I made this pseudocode with the help of the guide from the 'TIC TAC TOE" home
 3. Have to figure out how to to make sure all adjacent tiles that aren't numbers or bombs become 'un-nulled' after being uncovered
 4. Have to figure out how to uncover all bomb tiles, once player clicks on bomb. Also changing the background color of the bomb that was clicked to red
 5. Might consider having different board sizes for difficulty levels. Have to figure out how to code that through JS
+
+
+
+
+
+
+
+
 
 
 */
