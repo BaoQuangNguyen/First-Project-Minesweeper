@@ -3,8 +3,9 @@ const TILE_COLOR_LOOKUP = {
     '0': 'darkgray',
     '1': 'lightgray',
     '-1': 'red',
-    
 };
+// This constant will help populate the board with mines. Can adjust number for difficulty //
+const NUM_OF_MINES = 10;
 
 /*----- app's state (variables) -----*/
 // 1. Stated the state variables that I wanted to visualize in the browser //
@@ -22,6 +23,8 @@ const messageEl = document.querySelector("h1");
 
 const playAgainBtn = document.querySelector("button");
 
+const tileEls = [...document.querySelectorAll('#board > div')];
+
 /*----- event listeners -----*/
 document.getElementById('board').addEventListener('click', handleTile);
 playAgainBtn.addEventListener('click', init);
@@ -36,12 +39,53 @@ function init() {
     board = new Array(100).fill(0);
     loser = -1;
     winner = null;
+    generateMines();
     render();
 }
 
 function handleTile(evt) {
-
+    const tileIndex = tileEls.indexOf(evt.target);
+    if (board[tileIndex] === -1) {
+        loser = true;
+        revealBombTiles();
+    } else if (board[tileIndex] === 0) {
+        revealTile(tileIndex);
+        // checkWinCondition();
+    }
+    render();
 }
+
+function revealBombTiles() {
+    board.forEach(function(tile, idx) {
+        if (tile === -1) {
+            board[idx] = 1;
+        }
+    })
+}
+
+function revealTile(tileIndex) {
+    board[tileIndex] = 1;
+}
+
+// This function will help place the mines randomly on the board //
+function getRandomIndex() {
+    return Math.floor(Math.random() * board.length);
+}
+
+
+// Decided to create a function within renderBoard to generate the mines after it makes the board //
+function generateMines() {
+    let minesPlaced = 0;
+    // This while loop basically says, it will check the board and place mines on tiles that doesn't have the value of -1, and will keep doing that function until the max numbers of mines are reached //
+    while (minesPlaced < NUM_OF_MINES) {
+        const randomIndex = getRandomIndex();
+        if (board[randomIndex] !== -1) {
+            board[randomIndex] = -1;
+            minesPlaced++;
+        }
+    }
+}
+
 
 function render() {
     renderBoard();
@@ -52,16 +96,15 @@ function render() {
 function renderBoard() {
     board.forEach(function(tileVal, idx) {
         const tileEl = document.getElementById(`tile-${idx}`);
-        // console.log(tileEl);
         // Decided to do just the background color for the clickable tiles and bomb for now //
         tileEl.style.backgroundColor = TILE_COLOR_LOOKUP[tileVal];
-        });
+        })
     }
 
 
 
 function renderMessage() {
-    if (loser === '-1') {
+    if (loser) {
         messageEl.innerText = 'GAME OVER';
     } else if (winner) {
         messageEl.innerText = 'YOU WIN!';
