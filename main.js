@@ -1,21 +1,26 @@
 /*----- constants -----*/
+
 const TILE_COLOR_LOOKUP = {
+    // I made this variable into an object, so I would be able to access both the value and color //
     'closed': {value: 0, color: 'darkgray'},
     'open': {value: 1, color: 'lightgray'},
     'mine': {value: -1, color: 'red'},
 }
+
 // This constant will help populate the board with mines. Can adjust number for difficulty //
-const NUM_OF_MINES = 10;
+
+const NUM_OF_MINES = 30;
 
 /*----- app's state (variables) -----*/
-// 1. Stated the state variables that I wanted to visualize in the browser //
 // Started with board, loser and winner. Will Probably adjust later //
+// Ended up taking out loser because it didnt make sense to have both a winner and loser variable //
+
 let board;
 
 let winner;
 
+
 /*----- cached element references -----*/
-// 2. Cached the elements from HTML that I wanted to make interactive //
 
 const messageEl = document.querySelector("h1");
 
@@ -24,6 +29,7 @@ const playAgainBtn = document.querySelector("button");
 const tileEls = [...document.querySelectorAll('#board > div')];
 
 /*----- event listeners -----*/
+
 document.getElementById('board').addEventListener('click', handleTile);
 
 document.getElementById('board').addEventListener('contextmenu', handleRightClick);
@@ -31,14 +37,18 @@ document.getElementById('board').addEventListener('contextmenu', handleRightClic
 playAgainBtn.addEventListener('click', init);
 
 /*----- functions -----*/
-// 3. Stubbing up the init function, along with all the callback functions connected to it //
 
 init();
 
 function init() {
     // At first, I did a 2d Array board, where I had 10 lines of nulls. But then I found the new Array and fill method, which made it look alot cleaner. I also gave the object 2 different properties, the value to represent what kind of tile it is, and status to represent if its closed or open //
-    board = new Array(100).fill({value: 0, status: 'closed'});
+    // I spent majority of thursday trying to troubleshoot why all my tiles were opening when I clicked on a tile that wasn't a bomb. Turns out, fill was causing that issue. //
+    board = new Array(100);
+    for (i = 0 ; i < 100 ; i++) {
+        board[i] = {value: 0, status: 'closed'};
+    }
     winner = null;
+    // I had to invoke the generateMines function within the init function, so it would only generate the mines once //
     generateMines();
     render();
 }
@@ -48,15 +58,18 @@ function rightClickFlag() {
         const tileEl = document.getElementById(`tile-${idx}`);
         if (tile.status === 'flag') {
             tileEl.innerHTML = '&#9873;';
+            tileEl.style.backgroundColor = 'yellow';
         } else {
             tileEl.innerHTML = '';
+            tileEl.style.backgroundColor = getTileColor(tile.value, tile.status);
         }
     })
 }
+
 function handleRightClick(evt) {
     evt.preventDefault();
-    const tileIndex = parseInt(evt.target.id.split('-')[1]);
-    const tile = board[tileIndex];
+    const tileIdx = parseInt(evt.target.id.split('-')[1]);
+    const tile = board[tileIdx];
     if (tile.status === 'closed') {
         tile.status = 'flag';
     } else if (tile.status === 'flag') {
@@ -67,15 +80,54 @@ function handleRightClick(evt) {
 
 function handleTile(evt) {
     // This one took me a LONGGG time to figure out. After a lot of trial and error, I found that I had to split my id tile so it can grab the tile number. Not only that, I had to turn the whole string into an integer with parseInt //
-    const tileIndex = parseInt(evt.target.id.split('-')[1]);
-    if (board[tileIndex].value === -1) {
+    const tileIdx = parseInt(evt.target.id.split('-')[1]);
+    if (board[tileIdx].value === -1) {
         winner = false;
         revealMineTiles();
-    } else if (board[tileIndex].value === 0) {
-        revealTile(tileIndex);
+    } else if (board[tileIdx].value === 0) {
+        flood(tileIdx);
+        checkWinCondition();
+    } else {
+        revealTile(tileIdx);
         checkWinCondition();
     }
     render();
+}
+
+function flood(tileIdx) {
+    // With the combination of the 2 functions getAdjacentTiles and flood, it repeats the flood function filling every open tile until it reachs a stopping condition, which would've been the numbers //
+    const tile = board[tileIdx];
+    if (tile.status === 'closed') {
+        tile.status = 'open';
+        if (tile.value === 0) {
+            const adjacentTiles = getAdjacentTiles(tileIdx);
+            adjacentTiles.forEach(adjTileIdx => flood(adjTileIdx));
+        }
+    }
+}
+
+function getAdjacentTiles(tileIdx) {
+    const adjacentTiles = [];
+    // For row and col, it figures out the tile index by dividing the tile index by 10 for row, and getting the remainder for col //
+    const row = Math.floor(tileIdx / 10);
+    const col = tileIdx % 10;
+    // Both for loops, loops over the neighboring row and columns //
+    for (let i = -1; i <= 1; i++) {
+        for (let j = -1; j <= 1; j++) {
+            const newRow = row + i;
+            const newCol = col + j;
+            // This code makes sure that everything would be in valid range. In this case, nothing out of a 10x10 grid would be valid //
+            if (newRow >= 0 && newRow < 10 && newCol >= 0 && newCol < 10) {
+                // This code is what calculates the index of the neighboring tiles
+                const adjTileIdx = newRow * 10 + newCol;
+                // This code makes sure that the selected tile is excluded //
+                if (adjTileIdx !== tileIdx) {
+                    adjacentTiles.push(adjTileIdx);
+                }
+            }
+        }
+    }
+    return adjacentTiles;
 }
 
 function revealMineTiles() {
@@ -86,9 +138,8 @@ function revealMineTiles() {
     })
 }
 
-function revealTile(tileIndex) {
-    board[tileIndex].status = 'open'
-    console.log(revealTile);
+function revealTile(tileIdx) {
+    board[tileIdx].status = 'open'
 }
 
 function checkWinCondition() {
@@ -106,19 +157,18 @@ function getTileColor(tileValue, tileStatus) {
         return TILE_COLOR_LOOKUP[tileValue === -1 ? 'mine': 'open'].color;
     } 
 }
-// This function will help place the mines randomly on the board //
-function getRandomIndex() {
+
+function getRandomIdx() {
     return Math.floor(Math.random() * board.length);
 }
 
-// Decided to create a function to call within renderBoard to generate the mines after it makes the board //
 function generateMines() {
     let minesPlaced = 0;
     // This while loop basically says, it will check the board and place mines on tiles that doesn't have the value of -1, and will keep doing that function until the max numbers of mines are reached, and it also closes the mine tile to keep them hidden //
     while (minesPlaced < NUM_OF_MINES) {
-        const randomIndex = getRandomIndex();
-        if (board[randomIndex].value !== -1) {
-            board[randomIndex] = {value: -1, status: 'closed'};
+        const randomIdx = getRandomIdx();
+        if (board[randomIdx].value !== -1) {
+            board[randomIdx] = {value: -1, status: 'closed'};
             minesPlaced++;
         }
     }
@@ -155,5 +205,5 @@ function renderMessage() {
 
 function renderControls() {
     // Learned how to use the hidden button function using Ternary Expression from the Connect 4 code along video //
-    playAgainBtn.style.visibility = winner ? 'visible': 'hidden';
+    playAgainBtn.style.visibility = winner !== null ? 'visible': 'hidden';
 }
