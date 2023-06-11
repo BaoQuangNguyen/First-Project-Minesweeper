@@ -53,29 +53,71 @@ function init() {
     render();
 }
 
-function rightClickFlag() {
-    board.forEach(function(tile, idx) {
-        const tileEl = document.getElementById(`tile-${idx}`);
-        if (tile.status === 'flag') {
-            tileEl.innerHTML = '&#9873;';
-            tileEl.style.backgroundColor = 'yellow';
-        } else {
-            tileEl.innerHTML = '';
-            tileEl.style.backgroundColor = getTileColor(tile.value, tile.status);
+function generateMines() {
+    let minesPlaced = 0;
+    // This while loop basically says, it will check the board and place mines on tiles that doesn't have the value of -1, and will keep doing that function until the max numbers of mines are reached, and it also closes the mine tile to keep them hidden //
+    while (minesPlaced < NUM_OF_MINES) {
+        const randomIdx = getRandomIdx();
+        if (board[randomIdx].value !== -1) {
+            board[randomIdx] = {value: -1, status: 'closed'};
+            minesPlaced++;
         }
-    })
+    }
+    calculateNumbers();
 }
 
-function handleRightClick(evt) {
-    evt.preventDefault();
-    const tileIdx = parseInt(evt.target.id.split('-')[1]);
-    const tile = board[tileIdx];
-    if (tile.status === 'closed') {
-        tile.status = 'flag';
-    } else if (tile.status === 'flag') {
-        tile.status = 'closed';
+function getRandomIdx() {
+    return Math.floor(Math.random() * board.length);
+}
+
+function calculateNumbers() {
+    for (let i = 0; i < board.length; i++) {
+        const tile = board[i];
+        if (tile.value !== -1) {
+            const adjacentTiles = getAdjacentTiles(i);
+            let count = 0;
+            adjacentTiles.forEach(function (adjTileIdx) {
+                if (board[adjTileIdx].value === -1) {
+                    count++;
+                }
+            });
+            tile.value = count;
+        }
     }
-    render();
+}
+
+function render() {
+    renderBoard();
+    renderMessage();
+    renderControls();
+}
+
+function renderBoard() {
+    board.forEach(function(tile, idx) {
+        const tileEl = document.getElementById(`tile-${idx}`);
+        // This line basically makes sure the tiles are closed //
+        const tileStatus = tile.status || 'closed';
+        // And then this line retrieves the color from TILE_COLOR_LOOKUP //
+        const color = getTileColor(tile.value, tileStatus);
+        // And finally, this line sets up the background color of the tile when clicked //
+        tileEl.style.backgroundColor = color;
+    });
+    rightClickFlag();
+}
+
+function renderMessage() {
+    if (winner === true) {
+        messageEl.textContent = "You Win!"
+    } else if (winner === false) {
+        messageEl.textContent = "Game Over!"
+    } else {
+        messageEl.textContent = "";
+    }
+}
+
+function renderControls() {
+    // Learned how to use the hidden button function using Ternary Expression from the Connect 4 code along video //
+    playAgainBtn.style.visibility = winner !== null ? 'visible': 'hidden';
 }
 
 function handleTile(evt) {
@@ -94,6 +136,54 @@ function handleTile(evt) {
     render();
 }
 
+function handleRightClick(evt) {
+    evt.preventDefault();
+    const tileIdx = parseInt(evt.target.id.split('-')[1]);
+    const tile = board[tileIdx];
+    if (tile.status === 'closed') {
+        tile.status = 'flag';
+    } else if (tile.status === 'flag') {
+        tile.status = 'closed';
+    }
+    render();
+}
+
+function rightClickFlag() {
+    board.forEach(function(tile, idx) {
+        const tileEl = document.getElementById(`tile-${idx}`);
+        if (tile.status === 'flag') {
+            tileEl.innerHTML = '&#9873;';
+            tileEl.style.backgroundColor = 'yellow';
+        } else {
+            tileEl.innerHTML = '';
+            tileEl.style.backgroundColor = getTileColor(tile.value, tile.status);
+        }
+    })
+}
+
+function checkWinCondition() {
+    // At first, I thought about coding it saying for all tiles to be open for winner to be true, but then I realized I could just make the remaining closed tiles = to the number of mines instead //
+    const closedTiles = board.filter(function(tile) {
+        return tile.status === 'open';
+    })
+    if (closedTiles.length === NUM_OF_MINES) {
+        winner = true;
+    }
+}
+
+function revealMineTiles() {
+    board.forEach(function(tile, idx) {
+        if (tile.value === -1) {
+            tile.status = 'open';
+        }
+    })
+}
+
+function revealTile(tileIdx) {
+    board[tileIdx].status = 'open'
+}
+
+
 function flood(tileIdx) {
     // With the combination of the 2 functions getAdjacentTiles and flood, it repeats the flood function filling every open tile until it reachs a stopping condition, which would've been the numbers //
     const tile = board[tileIdx];
@@ -101,7 +191,9 @@ function flood(tileIdx) {
         tile.status = 'open';
         if (tile.value === 0) {
             const adjacentTiles = getAdjacentTiles(tileIdx);
-            adjacentTiles.forEach(adjTileIdx => flood(adjTileIdx));
+            adjacentTiles.forEach(function(adjTileIdx) {
+                flood(adjTileIdx);
+            })
         }
     }
 }
@@ -130,80 +222,8 @@ function getAdjacentTiles(tileIdx) {
     return adjacentTiles;
 }
 
-function revealMineTiles() {
-    board.forEach(function(tile, idx) {
-        if (tile.value === -1) {
-            tile.status = 'open';
-        }
-    })
-}
-
-function revealTile(tileIdx) {
-    board[tileIdx].status = 'open'
-}
-
-function checkWinCondition() {
-    // At first, I thought about coding it saying for all tiles to be open for winner to be true, but then I realized I could just make the remaining closed tiles = to the number of mines instead //
-    const closedTiles = board.filter(function(tile) {
-        return tile.status === 'open';
-    })
-    if (closedTiles.length === NUM_OF_MINES) {
-        winner = true;
-    }
-}
-
 function getTileColor(tileValue, tileStatus) {
     if (tileStatus === 'open') {
         return TILE_COLOR_LOOKUP[tileValue === -1 ? 'mine': 'open'].color;
     } 
-}
-
-function getRandomIdx() {
-    return Math.floor(Math.random() * board.length);
-}
-
-function generateMines() {
-    let minesPlaced = 0;
-    // This while loop basically says, it will check the board and place mines on tiles that doesn't have the value of -1, and will keep doing that function until the max numbers of mines are reached, and it also closes the mine tile to keep them hidden //
-    while (minesPlaced < NUM_OF_MINES) {
-        const randomIdx = getRandomIdx();
-        if (board[randomIdx].value !== -1) {
-            board[randomIdx] = {value: -1, status: 'closed'};
-            minesPlaced++;
-        }
-    }
-}
-
-function render() {
-    renderBoard();
-    renderMessage();
-    renderControls();
-}
-
-function renderBoard() {
-    board.forEach(function(tile, idx) {
-        const tileEl = document.getElementById(`tile-${idx}`);
-        // This line basically makes sure the tiles are closed //
-        const tileStatus = tile.status || 'closed';
-        // And then this line retrieves the color from TILE_COLOR_LOOKUP //
-        const color = getTileColor(tile.value, tileStatus);
-        // And finally, this line sets up the background color of the tile when clicked //
-        tileEl.style.backgroundColor = color;
-        });
-        rightClickFlag();
-    }
-
-function renderMessage() {
-    if (winner === true) {
-        messageEl.textContent = "You Win!"
-    } else if (winner === false) {
-        messageEl.textContent = "Game Over!"
-    } else {
-        messageEl.textContent = "";
-    }
-}
-
-function renderControls() {
-    // Learned how to use the hidden button function using Ternary Expression from the Connect 4 code along video //
-    playAgainBtn.style.visibility = winner !== null ? 'visible': 'hidden';
 }
