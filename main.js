@@ -6,19 +6,14 @@ const TILE_COLOR_LOOKUP = {
     'open': {value: 1, color: 'lightgray'},
     'mine': {value: -1, color: 'red'},
 }
-
 // This constant will help populate the board with mines. Can adjust number for difficulty //
-
-const NUM_OF_MINES = 30;
+const NUM_OF_MINES = 10;
 
 /*----- app's state (variables) -----*/
-// Started with board, loser and winner. Will Probably adjust later //
-// Ended up taking out loser because it didnt make sense to have both a winner and loser variable //
 
 let board;
 
 let winner;
-
 
 /*----- cached element references -----*/
 
@@ -51,6 +46,10 @@ function init() {
     // I had to invoke the generateMines function within the init function, so it would only generate the mines once //
     generateMines();
     render();
+    // I kept this function inside here to help reset the board once the player has pressed the play again button //
+    tileEls.forEach(function(tileEl) {
+        tileEl.innerHTML = '';
+      })
 }
 
 function generateMines() {
@@ -76,11 +75,11 @@ function calculateNumbers() {
         if (tile.value !== -1) {
             const adjacentTiles = getAdjacentTiles(i);
             let count = 0;
-            adjacentTiles.forEach(function (adjTileIdx) {
+            adjacentTiles.forEach(function(adjTileIdx) {
                 if (board[adjTileIdx].value === -1) {
                     count++;
                 }
-            });
+            })
             tile.value = count;
         }
     }
@@ -94,16 +93,24 @@ function render() {
 
 function renderBoard() {
     board.forEach(function(tile, idx) {
-        const tileEl = document.getElementById(`tile-${idx}`);
-        // This line basically makes sure the tiles are closed //
-        const tileStatus = tile.status || 'closed';
-        // And then this line retrieves the color from TILE_COLOR_LOOKUP //
-        const color = getTileColor(tile.value, tileStatus);
-        // And finally, this line sets up the background color of the tile when clicked //
-        tileEl.style.backgroundColor = color;
-    });
+      const tileEl = document.getElementById(`tile-${idx}`);
+      const tileStatus = tile.status || 'closed';
+      const color = getTileColor(tile.value, tileStatus);  
+      if (tileStatus === 'open') {
+        if (tile.value === -1) {
+            // This code applies the mine image on the mine tiles //
+          tileEl.innerHTML = '<img src="mine.png" alt="Mine" style="width: 100%; height: 100%;" draggable="false">';
+          // This is the code that gives visualization to the numbers on the tiles adjacent to the mines //
+        } else if (tile.value !== 0) {
+          tileEl.innerHTML = tile.value;
+        } else {
+          tileEl.innerHTML = '';
+        }
+      }
+      tileEl.style.backgroundColor = color;
+    })
     rightClickFlag();
-}
+  }
 
 function renderMessage() {
     if (winner === true) {
@@ -121,6 +128,14 @@ function renderControls() {
 }
 
 function handleTile(evt) {
+    // This is a guard that prevents the player to click on any more tiles once the win condition is decided //
+    if (winner !== null) {
+        return;
+    }
+    // Another guard I used to prevent the players from clicking in between the tiles //
+    if (evt.target.tagName !== 'DIV') {
+        return;
+    }
     // This one took me a LONGGG time to figure out. After a lot of trial and error, I found that I had to split my id tile so it can grab the tile number. Not only that, I had to turn the whole string into an integer with parseInt //
     const tileIdx = parseInt(evt.target.id.split('-')[1]);
     if (board[tileIdx].value === -1) {
@@ -137,13 +152,17 @@ function handleTile(evt) {
 }
 
 function handleRightClick(evt) {
+    // This code prevents the context menu from popping up //
     evt.preventDefault();
-    const tileIdx = parseInt(evt.target.id.split('-')[1]);
-    const tile = board[tileIdx];
-    if (tile.status === 'closed') {
-        tile.status = 'flag';
-    } else if (tile.status === 'flag') {
-        tile.status = 'closed';
+    if (winner === null) {
+        const tileIdx = parseInt(evt.target.id.split('-')[1]);
+        const tile = board[tileIdx];
+        // This if else statement give the players to add and remove flags if needed //
+        if (tile.status === 'closed') {
+            tile.status = 'flag';
+        } else if (tile.status === 'flag') {
+            tile.status = 'closed';
+        }
     }
     render();
 }
@@ -152,10 +171,8 @@ function rightClickFlag() {
     board.forEach(function(tile, idx) {
         const tileEl = document.getElementById(`tile-${idx}`);
         if (tile.status === 'flag') {
-            tileEl.innerHTML = '&#9873;';
             tileEl.style.backgroundColor = 'yellow';
-        } else {
-            tileEl.innerHTML = '';
+        } else if (tile.status === 'closed') { 
             tileEl.style.backgroundColor = getTileColor(tile.value, tile.status);
         }
     })
@@ -164,7 +181,7 @@ function rightClickFlag() {
 function checkWinCondition() {
     // At first, I thought about coding it saying for all tiles to be open for winner to be true, but then I realized I could just make the remaining closed tiles = to the number of mines instead //
     const closedTiles = board.filter(function(tile) {
-        return tile.status === 'open';
+        return tile.status === 'closed';
     })
     if (closedTiles.length === NUM_OF_MINES) {
         winner = true;
@@ -183,9 +200,8 @@ function revealTile(tileIdx) {
     board[tileIdx].status = 'open'
 }
 
-
 function flood(tileIdx) {
-    // With the combination of the 2 functions getAdjacentTiles and flood, it repeats the flood function filling every open tile until it reachs a stopping condition, which would've been the numbers //
+    // With the combination of the 2 functions getAdjacentTiles and flood, it repeats the flood function filling every open tile until it reachs a stopping condition, which would be the numbers //
     const tile = board[tileIdx];
     if (tile.status === 'closed') {
         tile.status = 'open';
@@ -225,5 +241,7 @@ function getAdjacentTiles(tileIdx) {
 function getTileColor(tileValue, tileStatus) {
     if (tileStatus === 'open') {
         return TILE_COLOR_LOOKUP[tileValue === -1 ? 'mine': 'open'].color;
-    } 
+    } else if (tileStatus === 'closed') {
+        return TILE_COLOR_LOOKUP[tileValue === 0 ? 'closed': 'closed'].color;
+    }
 }

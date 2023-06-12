@@ -24,7 +24,6 @@ body {
     grid-template-rows: repeat(10, 6vmin);
     border: .2vmin solid black;
     background-color: darkgray;
-    
 }
 
 #board > div {
@@ -32,7 +31,6 @@ body {
     justify-content: center;
     align-items: center;
     border: 1px solid black;
-
 }
 
 button {
@@ -44,7 +42,6 @@ button {
     background-color: red;
     font-family: 'Merriweather', serif;
     transform: scale(0.8);
-    
 }
 
 button:hover {
