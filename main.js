@@ -7,7 +7,7 @@ const TILE_COLOR_LOOKUP = {
     'mine': {value: -1, color: 'red'},
 }
 // This constant will help populate the board with mines. Can adjust number for difficulty //
-const NUM_OF_MINES = 2;
+const NUM_OF_MINES = 10;
 
 /*----- app's state (variables) -----*/
 
@@ -187,7 +187,7 @@ function checkWinCondition() {
         } else if (tile.status === 'flag' && tile.value === -1) {
             flaggedMines++;
         }
-    });
+    })
     if (uncoveredTiles + flaggedMines === NUM_OF_MINES) {
         winner = true;
     }

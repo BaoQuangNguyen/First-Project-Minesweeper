@@ -9,7 +9,7 @@ Can you make it to the end without blowing up?
 
 * Uncover all the tiles without touching a mine and win!  
 
-# Up to the Challenge? https://baoquangnguyen.github.io/Project1/
+# Up to the Challenge? https://baoquangnguyen.github.io/First-Project-Minesweeper/
 # ![Screenshot 2023-06-12 at 1 40 01 PM](https://github.com/BaoQuangNguyen/Project1/assets/133722378/d1a347ee-fe43-4627-81f1-9bdf6ba30ad1)
 
 # Technologies Used
