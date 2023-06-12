@@ -7,7 +7,7 @@ const TILE_COLOR_LOOKUP = {
     'mine': {value: -1, color: 'red'},
 }
 // This constant will help populate the board with mines. Can adjust number for difficulty //
-const NUM_OF_MINES = 10;
+const NUM_OF_MINES = 2;
 
 /*----- app's state (variables) -----*/
 
@@ -179,11 +179,16 @@ function rightClickFlag() {
 }
 
 function checkWinCondition() {
-    // At first, I thought about coding it saying for all tiles to be open for winner to be true, but then I realized I could just make the remaining closed tiles = to the number of mines instead //
-    const closedTiles = board.filter(function(tile) {
-        return tile.status === 'closed';
-    })
-    if (closedTiles.length === NUM_OF_MINES) {
+    let uncoveredTiles = 0;
+    let flaggedMines = 0;
+    board.forEach(function(tile) {
+        if (tile.status === 'closed') {
+            uncoveredTiles++;
+        } else if (tile.status === 'flag' && tile.value === -1) {
+            flaggedMines++;
+        }
+    });
+    if (uncoveredTiles + flaggedMines === NUM_OF_MINES) {
         winner = true;
     }
 }
